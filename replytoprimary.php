@@ -134,30 +134,65 @@ function replytoprimary_civicrm_entityTypes(&$entityTypes) {
   _replytoprimary_civix_civicrm_entityTypes($entityTypes);
 }
 
-// --- Functions below this ship commented out. Uncomment as required. ---
+/**
+ * Implements hook_civicrm_buildForm().
+ */
+function replytoprimary_civicrm_buildForm($formName, &$form) {
+  if ($formName == 'CRM_Contact_Form_Task_Email') {
+    $session = CRM_Core_Session::singleton();
+    $contact_id = $session->get('userID');
+    $primary_email = _replytoprimary_get_primary($contact_id);
+
+    // It's unlikely a contact sending emails would not have an email,
+    // since Drupal/WP users must have an email, and it gets synched to their contact.
+    if ($primary_email) {
+      CRM_Core_Session::setStatus(ts("The email's Reply-To will be set to %1", [1 => $primary_email]));
+    }
+  }
+}
 
 /**
- * Implements hook_civicrm_preProcess().
+ * Implements hook_civicrm_alterMailParams().
  *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function replytoprimary_civicrm_preProcess($formName, &$form) {
+ */
+function replytoprimary_civicrm_alterMailParams(&$params, $context) {
 
-} // */
+  // If the contact has a primary email, and this is a Send Email activity,
+  // use their Primary Email as the Reply To header.
+
+  // NB: if the contact has multiple addresses, warn about which email is going to be used?
+  // ex: if a personal email address become their primary email.
+
+  if (! in_array($context, ['messageTemplate', 'singleEmail'])) {
+    return;
+  }
+
+  $session = CRM_Core_Session::singleton();
+  $contact_id = $session->get('userID');
+
+  // Fetch emails for the currently logged in contact
+  $primary_email = _replytoprimary_get_primary($contact_id);
+
+  if ($primary_email) {
+    $params['replyTo'] = $primary_email;
+  }
+}
 
 /**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
-function replytoprimary_civicrm_navigationMenu(&$menu) {
-  _replytoprimary_civix_insert_navigation_menu($menu, 'Mailings', array(
-    'label' => E::ts('New subliminal message'),
-    'name' => 'mailing_subliminal_message',
-    'url' => 'civicrm/mailing/subliminal',
-    'permission' => 'access CiviMail',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _replytoprimary_civix_navigationMenu($menu);
-} // */
+ * Returns the primary email address.
+ */
+function _replytoprimary_get_primary($contact_id) {
+  // Fetch emails for the currently logged in contact
+  $result = civicrm_api3('Email', 'get', [
+    'contact_id' => $contact_id,
+    'is_primary' => 1,
+    'sequential' => 1,
+  ]);
+
+  if (!empty($result['values'])) {
+    // There should always be only one email
+    return $result['values'][0]['email'];
+  }
+
+  return NULL;
+}
