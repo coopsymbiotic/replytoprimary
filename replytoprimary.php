@@ -173,9 +173,7 @@ function replytoprimary_civicrm_alterMailParams(&$params, $context) {
   // Most probably a system email
   // ex: password reset sent through CiviCRM (civicrmmailer).
   if (empty($contact_id)) {
-    // Fetch the default 'from' email
-    $t = CRM_Core_BAO_Domain::getNameAndEmail(FALSE, TRUE);
-    $params['from'] = array_pop($t);
+    $params['from'] = CRM_Replytoprimary_Utils::getDefaultDomainEmail();
 
     // Set the replyTo to the default org contact
     $domain_id = CRM_Core_Config::domainID();
@@ -190,6 +188,11 @@ function replytoprimary_civicrm_alterMailParams(&$params, $context) {
 
   if ($primary_email) {
     $params['replyTo'] = $primary_email;
+  }
+
+  // Validate if the 'from' email is valid.
+  if (!CRM_Replytoprimary_Utils::isValidFrom($params['from'])) {
+    $params['from'] = CRM_Replytoprimary_Utils::getDefaultDomainEmail();
   }
 }
 
