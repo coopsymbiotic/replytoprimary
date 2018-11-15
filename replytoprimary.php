@@ -170,6 +170,21 @@ function replytoprimary_civicrm_alterMailParams(&$params, $context) {
   $session = CRM_Core_Session::singleton();
   $contact_id = $session->get('userID');
 
+  // Most probably a system email
+  // ex: password reset sent through CiviCRM (civicrmmailer).
+  if (empty($contact_id)) {
+    // Fetch the default 'from' email
+    $t = CRM_Core_BAO_Domain::getNameAndEmail(FALSE, TRUE);
+    $params['from'] = array_pop($t);
+
+    // Set the replyTo to the default org contact
+    $domain_id = CRM_Core_Config::domainID();
+
+    $contact_id = CRM_Core_DAO::singleValueQuery('SELECT contact_id FROM civicrm_domain WHERE id = %1', [
+      1 => [$domain_id, 'Positive'],
+    ]);
+  }
+
   // Fetch emails for the currently logged in contact
   $primary_email = _replytoprimary_get_primary($contact_id);
 
