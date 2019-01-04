@@ -231,3 +231,10 @@ function _replytoprimary_get_primary($contact_id) {
 
   return NULL;
 }
+
+/**
+ * Implements hook_civicrm_check().
+ */
+function replytoprimary_civicrm_check(&$messages) {
+  CRM_Replytoprimary_Utils_Check_DefaultOrgEmail::check($messages);
+}
