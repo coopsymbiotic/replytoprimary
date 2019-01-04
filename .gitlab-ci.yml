@@ -1,0 +1,21 @@
+test:
+  stage: test
+  before_script:
+    - export PATH="/home/gitlab-runner/buildkit/bin:$PATH"
+    - export SITEURL="replytoprimary-tests.dev501.symbiodev.xyz"
+    - export SITEPATH="/home/gitlab-runner/buildkit/build/replytoprimary-tests.dev501.symbiodev.xyz"
+    - export SITEPATHEXT="/home/gitlab-runner/buildkit/build/replytoprimary-tests.dev501.symbiodev.xyz/sites/default/files/civicrm/ext/"
+    - export CIVICRM_SETTINGS="/home/gitlab-runner//buildkit/build/replytoprimary-tests.dev501.symbiodev.xyz/sites/default/civicrm.settings.php"
+  script:
+    - if [ ! -d "$SITEPATH" ]; then cd /home/gitlab-runner/buildkit/ && civibuild create $SITEURL --url http://$SITEURL:80 --type drupal-clean --civi-ver "5.8"; fi
+    - mkdir -p $SITEPATH/sites/default/files/civicrm/ext
+    - chgrp -R www-data $SITEPATH/sites/default/files || true
+    - chmod -R g+w $SITEPATH/sites/default/files || true
+    - rm -f $SITEPATHEXT/$CI_PROJECT_NAME
+    - ln -s $CI_PROJECT_DIR $SITEPATHEXT/$CI_PROJECT_NAME
+    - cd $SITEPATHEXT
+    - cv ext:enable replytoprimary
+    - cd $SITEPATHEXT/replytoprimary
+    - phpunit4
+  tags:
+    - dev501buildkit
