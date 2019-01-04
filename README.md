@@ -1,44 +1,23 @@
-# replytoprimary
+# Reply To Primary
 
-![Screenshot](/images/screenshot.png)
+This extension addresses the rather obscure but common use-case where:
 
-(*FIXME: In one or two paragraphs, describe what the extension does and why one would download it. *)
+* We want CiviCRM to send out emails
+* but we are not allowed to send email using the organisation's or the person's email (ex: gmail.com address, or some other domain for which we do not have permission through SPF/DKIM to send email)
+* and so we want to use a generic from (`no-reply@example.org`) and set a reply-to to the address of the person who should receive responses (ex: `example@gmail.com`).
 
 The extension is licensed under [AGPL-3.0](LICENSE.txt).
 
 ## Requirements
 
-* PHP v5.4+
-* CiviCRM (*FIXME: Version number*)
+* PHP v7.0+
+* CiviCRM Latest
 
-## Installation (Web UI)
+## Installation
 
-This extension has not yet been published for installation via the web UI.
-
-## Installation (CLI, Zip)
-
-Sysadmins and developers may download the `.zip` file for this extension and
-install it with the command-line tool [cv](https://github.com/civicrm/cv).
-
-```bash
-cd <extension-dir>
-cv dl replytoprimary@https://github.com/FIXME/replytoprimary/archive/master.zip
-```
-
-## Installation (CLI, Git)
-
-Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) repo for this extension and
-install it with the command-line tool [cv](https://github.com/civicrm/cv).
-
-```bash
-git clone https://github.com/FIXME/replytoprimary.git
-cv en replytoprimary
-```
+Install as a regular extension.
 
 ## Usage
 
-(* FIXME: Where would a new user navigate to get started? What changes would they see? *)
-
-## Known Issues
-
-(* FIXME *)
+* As a logged-in user: make sure the contact record has (preferably) a primary email address. Otherwise, the first email address will be used.
+* For system notifications: make sure that the organisation record linked to the domain (usually Contact ID 1 or 2) has an email address. The "System Status" will warn otherwise.
