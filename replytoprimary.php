@@ -203,7 +203,8 @@ function replytoprimary_civicrm_alterMailParams(&$params, $context) {
 }
 
 /**
- * Returns the primary email address.
+ * Returns the primary email address, if available. Otherwise returns the
+ * first email found.
  */
 function _replytoprimary_get_primary($contact_id) {
   // Fetch emails for the currently logged in contact
@@ -214,7 +215,17 @@ function _replytoprimary_get_primary($contact_id) {
   ]);
 
   if (!empty($result['values'])) {
-    // There should always be only one email
+    // There should always be only one primary email
+    return $result['values'][0]['email'];
+  }
+
+  // Return the first email found
+  $result = civicrm_api3('Email', 'get', [
+    'contact_id' => $contact_id,
+    'sequential' => 1,
+  ]);
+
+  if (!empty($result['values'])) {
     return $result['values'][0]['email'];
   }
 
