@@ -170,6 +170,12 @@ function replytoprimary_civicrm_alterMailParams(&$params, $context) {
   $session = CRM_Core_Session::singleton();
   $contact_id = $session->get('userID');
 
+  // Scheduled Reminders are usually sent by cron
+  // so always ignore the logged-in user.
+  if (CRM_Utils_Array::value('groupName', $params) == 'Scheduled Reminder Sender') {
+    $contact_id = NULL;
+  }
+
   // Most probably a system email
   // ex: password reset sent through CiviCRM (civicrmmailer).
   if (empty($contact_id)) {
